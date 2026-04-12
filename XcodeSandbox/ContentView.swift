@@ -5,6 +5,7 @@
 //  Created by Codex on 4/12/26.
 //
 
+import Charts
 import SwiftUI
 
 struct ContentView: View {
@@ -36,12 +37,12 @@ struct ContentView: View {
 private struct TodayView: View {
     let store: StudyStore
 
-    @State private var newProjectName = ""
-    @State private var selectedColor: ProjectColor = .blue
-    @State private var isPresentingAddProject = false
+    @State private var addProjectDraft = ProjectDraft.empty
+    @State private var presentedSheet: ProjectSheet?
 
     var body: some View {
         List {
+            goalSection
             todaySummarySection
             activeSessionSection
             projectSection
@@ -50,21 +51,63 @@ private struct TodayView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    isPresentingAddProject = true
+                    addProjectDraft = .empty
+                    presentedSheet = .add
                 } label: {
                     Label("添加项目", systemImage: "plus")
                 }
             }
         }
-        .sheet(isPresented: $isPresentingAddProject) {
-            AddProjectView(
-                name: $newProjectName,
-                selectedColor: $selectedColor
-            ) {
-                store.addProject(named: newProjectName, color: selectedColor)
-                newProjectName = ""
-                selectedColor = .blue
-                isPresentingAddProject = false
+        .sheet(item: $presentedSheet) { sheet in
+            switch sheet {
+            case .add:
+                ProjectEditorView(
+                    title: "添加项目",
+                    draft: $addProjectDraft
+                ) {
+                    store.addProject(named: addProjectDraft.name, color: addProjectDraft.color)
+                    presentedSheet = nil
+                }
+            case .edit(let projectID):
+                if let project = store.project(for: projectID) {
+                    ProjectDetailView(
+                        store: store,
+                        project: project
+                    )
+                }
+            case .goal:
+                GoalEditorView(store: store)
+            }
+        }
+    }
+
+    private var goalSection: some View {
+        Section("今日目标") {
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("目标")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(store.dailyGoalMinutes) 分钟")
+                            .fontWeight(.semibold)
+                    }
+
+                    ProgressView(value: store.dailyGoalProgress(now: context.date)) {
+                        EmptyView()
+                    } currentValueLabel: {
+                        Text(
+                            "\(context.date.formattedDuration(store.durationToday(now: context.date))) / \(store.dailyGoalMinutes.formattedMinuteGoal)"
+                        )
+                        .monospacedDigit()
+                    }
+                    .tint(store.dailyGoalProgress(now: context.date) >= 1 ? .green : .orange)
+
+                    Button("调整目标") {
+                        presentedSheet = .goal
+                    }
+                }
+                .padding(.vertical, 4)
             }
         }
     }
@@ -139,6 +182,22 @@ private struct TodayView: View {
                             store.startSession(for: project.id, at: .now)
                         }
                     }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        presentedSheet = .edit(project.id)
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button("编辑") {
+                            presentedSheet = .edit(project.id)
+                        }
+                        .tint(.blue)
+
+                        if store.activeSession?.projectID != project.id {
+                            Button("删除", role: .destructive) {
+                                store.deleteProject(project.id)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -196,6 +255,27 @@ private struct StatisticsView: View {
                 statisticRow(title: "累计项目数", value: "\(store.projects.count)")
                 statisticRow(title: "累计学习次数", value: "\(store.sessions.count)")
                 statisticRow(title: "累计学习时长", value: Date.now.formattedDuration(totalDuration))
+            }
+
+            Section("最近 7 天") {
+                Chart(store.lastSevenDays()) { point in
+                    BarMark(
+                        x: .value("日期", point.date, unit: .day),
+                        y: .value("时长", point.duration / 60)
+                    )
+                    .foregroundStyle(.orange.gradient)
+                    .cornerRadius(6)
+                }
+                .frame(height: 220)
+                .chartYAxis {
+                    AxisMarks(position: .leading)
+                }
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: .day)) { value in
+                        AxisGridLine()
+                        AxisValueLabel(format: .dateTime.weekday(.narrow), centered: true)
+                    }
+                }
             }
 
             Section("项目排行") {
@@ -308,22 +388,98 @@ private struct SessionRow: View {
     }
 }
 
-private struct AddProjectView: View {
+private struct ProjectDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
-    @Binding var name: String
-    @Binding var selectedColor: ProjectColor
+    let store: StudyStore
+    let project: StudyProject
+
+    @State private var draft: ProjectDraft
+
+    init(store: StudyStore, project: StudyProject) {
+        self.store = store
+        self.project = project
+        _draft = State(initialValue: ProjectDraft(project: project))
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("项目名称") {
+                    TextField("例如：英语阅读", text: $draft.name)
+                }
+
+                Section("颜色") {
+                    Picker("颜色", selection: $draft.color) {
+                        ForEach(ProjectColor.allCases) { color in
+                            Label(color.rawValue.capitalized, systemImage: "circle.fill")
+                                .foregroundStyle(color.swiftUIColor)
+                                .tag(color)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                }
+
+                Section("统计") {
+                    infoRow(title: "今日时长", value: Date.now.formattedDuration(store.durationToday(for: project.id)))
+                    infoRow(title: "总时长", value: Date.now.formattedDuration(store.totalDuration(for: project.id)))
+                }
+
+                if store.activeSession?.projectID != project.id {
+                    Section {
+                        Button("删除项目", role: .destructive) {
+                            store.deleteProject(project.id)
+                            dismiss()
+                        }
+                    }
+                }
+            }
+            .navigationTitle("编辑项目")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("关闭") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("保存") {
+                        store.updateProject(id: project.id, name: draft.name, color: draft.color)
+                        dismiss()
+                    }
+                    .disabled(draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
+    }
+
+    private func infoRow(title: String, value: String) -> some View {
+        HStack {
+            Text(title)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+                .monospacedDigit()
+        }
+    }
+}
+
+private struct ProjectEditorView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let title: String
+    @Binding var draft: ProjectDraft
     let onSave: () -> Void
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("项目名称") {
-                    TextField("例如：英语阅读", text: $name)
+                    TextField("例如：英语阅读", text: $draft.name)
                 }
 
                 Section("颜色") {
-                    Picker("颜色", selection: $selectedColor) {
+                    Picker("颜色", selection: $draft.color) {
                         ForEach(ProjectColor.allCases) { color in
                             Label(color.rawValue.capitalized, systemImage: "circle.fill")
                                 .foregroundStyle(color.swiftUIColor)
@@ -333,7 +489,7 @@ private struct AddProjectView: View {
                     .pickerStyle(.inline)
                 }
             }
-            .navigationTitle("添加项目")
+            .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("取消") {
@@ -345,9 +501,87 @@ private struct AddProjectView: View {
                     Button("保存") {
                         onSave()
                     }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
+        }
+    }
+}
+
+private struct GoalEditorView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let store: StudyStore
+    @State private var selectedGoal: Int
+
+    init(store: StudyStore) {
+        self.store = store
+        _selectedGoal = State(initialValue: store.dailyGoalMinutes)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("每日学习目标") {
+                    Stepper(value: $selectedGoal, in: 15...600, step: 15) {
+                        Text("\(selectedGoal) 分钟")
+                    }
+                }
+            }
+            .navigationTitle("每日目标")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("取消") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("保存") {
+                        store.setDailyGoalMinutes(selectedGoal)
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct ProjectDraft: Identifiable, Equatable {
+    let id: UUID
+    var name: String
+    var color: ProjectColor
+
+    init(id: UUID = UUID(), name: String, color: ProjectColor) {
+        self.id = id
+        self.name = name
+        self.color = color
+    }
+
+    init(project: StudyProject) {
+        self.id = project.id
+        self.name = project.name
+        self.color = ProjectColor(rawValue: project.colorName) ?? .blue
+    }
+
+    static var empty: ProjectDraft {
+        ProjectDraft(name: "", color: .blue)
+    }
+}
+
+private enum ProjectSheet: Identifiable {
+    case add
+    case edit(UUID)
+    case goal
+
+    var id: String {
+        switch self {
+        case .add:
+            "add"
+        case .edit(let id):
+            "edit-\(id.uuidString)"
+        case .goal:
+            "goal"
         }
     }
 }
@@ -382,6 +616,20 @@ private extension Date {
             return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         }
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+}
+
+private extension Int {
+    var formattedMinuteGoal: String {
+        if self >= 60 {
+            let hours = self / 60
+            let minutes = self % 60
+            if minutes == 0 {
+                return "\(hours)h"
+            }
+            return "\(hours)h \(minutes)m"
+        }
+        return "\(self)m"
     }
 }
 

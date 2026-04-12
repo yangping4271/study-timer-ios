@@ -13,6 +13,7 @@ final class StudyStore {
     private(set) var projects: [StudyProject]
     private(set) var sessions: [StudySession]
     private(set) var activeSession: ActiveSession?
+    private(set) var dailyGoalMinutes: Int
 
     private let calendar: Calendar
     private let saveURL: URL
@@ -23,12 +24,14 @@ final class StudyStore {
         projects: [StudyProject] = [],
         sessions: [StudySession] = [],
         activeSession: ActiveSession? = nil,
+        dailyGoalMinutes: Int = 120,
         calendar: Calendar = .current,
         saveURL: URL? = nil
     ) {
         self.projects = projects
         self.sessions = sessions
         self.activeSession = activeSession
+        self.dailyGoalMinutes = dailyGoalMinutes
         self.calendar = calendar
         self.saveURL = saveURL ?? Self.defaultSaveURL()
 
@@ -58,6 +61,30 @@ final class StudyStore {
             StudyProject(name: trimmedName, colorName: color.rawValue),
             at: 0
         )
+        persist()
+    }
+
+    func updateProject(id: UUID, name: String, color: ProjectColor) {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else { return }
+        guard let index = projects.firstIndex(where: { $0.id == id }) else { return }
+
+        projects[index].name = trimmedName
+        projects[index].colorName = color.rawValue
+        persist()
+    }
+
+    func deleteProject(_ projectID: UUID) {
+        if activeSession?.projectID == projectID {
+            activeSession = nil
+        }
+        projects.removeAll { $0.id == projectID }
+        sessions.removeAll { $0.projectID == projectID }
+        persist()
+    }
+
+    func setDailyGoalMinutes(_ minutes: Int) {
+        dailyGoalMinutes = max(15, min(minutes, 600))
         persist()
     }
 
@@ -122,6 +149,34 @@ final class StudyStore {
         return finishedDuration + activeDuration
     }
 
+    func dailyGoalProgress(now: Date = .now) -> Double {
+        guard dailyGoalMinutes > 0 else { return 0 }
+        return min(durationToday(now: now) / Double(dailyGoalMinutes * 60), 1)
+    }
+
+    func lastSevenDays(now: Date = .now) -> [DailyDurationPoint] {
+        let today = calendar.startOfDay(for: now)
+
+        return (0..<7).compactMap { offset -> DailyDurationPoint? in
+            guard let date = calendar.date(byAdding: .day, value: -offset, to: today) else { return nil }
+            let nextDate = calendar.date(byAdding: .day, value: 1, to: date) ?? date
+
+            let finishedDuration = sessions
+                .filter { $0.startedAt >= date && $0.startedAt < nextDate }
+                .reduce(0) { $0 + $1.duration }
+
+            let activeDuration: TimeInterval
+            if let activeSession, activeSession.startedAt >= date && activeSession.startedAt < nextDate {
+                activeDuration = now.timeIntervalSince(activeSession.startedAt)
+            } else {
+                activeDuration = 0
+            }
+
+            return DailyDurationPoint(date: date, duration: finishedDuration + activeDuration)
+        }
+        .reversed()
+    }
+
     func groupedSessions() -> [(date: Date, sessions: [StudySession])] {
         let grouped = Dictionary(grouping: sessions) { session in
             calendar.startOfDay(for: session.startedAt)
@@ -146,13 +201,15 @@ final class StudyStore {
         projects = snapshot.projects
         sessions = snapshot.sessions.sorted { $0.startedAt > $1.startedAt }
         activeSession = snapshot.activeSession
+        dailyGoalMinutes = snapshot.dailyGoalMinutes
     }
 
     private func persist() {
         let snapshot = StudySnapshot(
             projects: projects,
             sessions: sessions,
-            activeSession: activeSession
+            activeSession: activeSession,
+            dailyGoalMinutes: dailyGoalMinutes
         )
 
         do {
