@@ -12,13 +12,53 @@
 		XXAD25BC19689D5035DE9BXX /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = XXE274B35F27E365B849C0XX /* ContentView.swift */; };
 		XXB001000000000000000001 /* StudyModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = XXB001000000000000000002 /* StudyModels.swift */; };
 		XXB001000000000000000003 /* StudyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = XXB001000000000000000004 /* StudyStore.swift */; };
+		XXB001000000000000000005 /* SharedConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = XXB001000000000000000006 /* SharedConfig.swift */; };
+		XXB001000000000000000007 /* StudyReminderScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = XXB001000000000000000008 /* StudyReminderScheduler.swift */; };
+		XXC001000000000000000001 /* XcodeSandboxWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = XXC001000000000000000002 /* XcodeSandboxWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		XXC001000000000000000003 /* StudyTimerWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = XXC001000000000000000004 /* StudyTimerWidgetBundle.swift */; };
+		XXC001000000000000000005 /* StudyTimerWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = XXC001000000000000000006 /* StudyTimerWidget.swift */; };
+		XXC001000000000000000007 /* WidgetSharedLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = XXC001000000000000000008 /* WidgetSharedLoader.swift */; };
+		XXC001000000000000000009 /* SharedConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = XXB001000000000000000006 /* SharedConfig.swift */; };
+		XXC001000000000000000010 /* StudyModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = XXB001000000000000000002 /* StudyModels.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		XXC001000000000000000011 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 00000000000000000000ROOT /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = XXC001000000000000000012;
+			remoteInfo = XcodeSandboxWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		XXC001000000000000000013 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				XXC001000000000000000001 /* XcodeSandboxWidget.appex in Embed App Extensions */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		XX0182E36293E7A95A811DXX /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		XX5FF691F7AD727A410BF6XX /* XcodeSandbox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeSandbox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		XXB001000000000000000002 /* StudyModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyModels.swift; sourceTree = "<group>"; };
 		XXB001000000000000000004 /* StudyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyStore.swift; sourceTree = "<group>"; };
+		XXB001000000000000000006 /* SharedConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedConfig.swift; sourceTree = "<group>"; };
+		XXB001000000000000000008 /* StudyReminderScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyReminderScheduler.swift; sourceTree = "<group>"; };
+		XXB001000000000000000009 /* XcodeSandbox.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = XcodeSandbox.entitlements; sourceTree = "<group>"; };
+		XXC001000000000000000002 /* XcodeSandboxWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = XcodeSandboxWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		XXC001000000000000000004 /* StudyTimerWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyTimerWidgetBundle.swift; sourceTree = "<group>"; };
+		XXC001000000000000000006 /* StudyTimerWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyTimerWidget.swift; sourceTree = "<group>"; };
+		XXC001000000000000000008 /* WidgetSharedLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSharedLoader.swift; sourceTree = "<group>"; };
+		XXC001000000000000000014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		XXC001000000000000000015 /* XcodeSandboxWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = XcodeSandboxWidget.entitlements; sourceTree = "<group>"; };
 		XXDA8A898DB82A185073A6XX /* XcodeSandboxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XcodeSandboxApp.swift; sourceTree = "<group>"; };
 		XXE274B35F27E365B849C0XX /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -38,6 +78,7 @@
 			isa = PBXGroup;
 			children = (
 				XX696990942C477980401DXX /* XcodeSandbox */,
+				XXC001000000000000000016 /* XcodeSandboxWidget */,
 				XXE87C8832ADB06B2840E0XX /* Products */,
 			);
 			sourceTree = "<group>";
@@ -49,15 +90,31 @@
 				XXE274B35F27E365B849C0XX /* ContentView.swift */,
 				XXB001000000000000000002 /* StudyModels.swift */,
 				XXB001000000000000000004 /* StudyStore.swift */,
+				XXB001000000000000000006 /* SharedConfig.swift */,
+				XXB001000000000000000008 /* StudyReminderScheduler.swift */,
+				XXB001000000000000000009 /* XcodeSandbox.entitlements */,
 				XX0182E36293E7A95A811DXX /* Assets.xcassets */,
 			);
 			path = XcodeSandbox;
+			sourceTree = "<group>";
+		};
+		XXC001000000000000000016 /* XcodeSandboxWidget */ = {
+			isa = PBXGroup;
+			children = (
+				XXC001000000000000000004 /* StudyTimerWidgetBundle.swift */,
+				XXC001000000000000000006 /* StudyTimerWidget.swift */,
+				XXC001000000000000000008 /* WidgetSharedLoader.swift */,
+				XXC001000000000000000014 /* Info.plist */,
+				XXC001000000000000000015 /* XcodeSandboxWidget.entitlements */,
+			);
+			path = XcodeSandboxWidget;
 			sourceTree = "<group>";
 		};
 		XXE87C8832ADB06B2840E0XX /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				XX5FF691F7AD727A410BF6XX /* XcodeSandbox.app */,
+				XXC001000000000000000002 /* XcodeSandboxWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -72,15 +129,34 @@
 				XXE45443DC38DCFE1DB622XX /* Sources */,
 				XX074B8811C1CF8E8A3D74XX /* Frameworks */,
 				XXFA5A8CCDD805DF7AEF9CXX /* Resources */,
+				XXC001000000000000000013 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				XXC001000000000000000017 /* PBXTargetDependency */,
 			);
 			name = XcodeSandbox;
 			productName = XcodeSandbox;
 			productReference = XX5FF691F7AD727A410BF6XX /* XcodeSandbox.app */;
 			productType = "com.apple.product-type.application";
+		};
+		XXC001000000000000000012 /* XcodeSandboxWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = XXC001000000000000000018 /* Build configuration list for PBXNativeTarget "XcodeSandboxWidget" */;
+			buildPhases = (
+				XXC001000000000000000019 /* Sources */,
+				XXC001000000000000000020 /* Frameworks */,
+				XXC001000000000000000021 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = XcodeSandboxWidget;
+			productName = XcodeSandboxWidget;
+			productReference = XXC001000000000000000002 /* XcodeSandboxWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -93,6 +169,9 @@
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					XXE1770D0CCB8BD0ED1A55XX = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					XXC001000000000000000012 = {
 						CreatedOnToolsVersion = 16.2;
 					};
 				};
@@ -111,6 +190,7 @@
 			projectRoot = "";
 			targets = (
 				XXE1770D0CCB8BD0ED1A55XX /* XcodeSandbox */,
+				XXC001000000000000000012 /* XcodeSandboxWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -121,6 +201,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				XX4CDD7BDA9527231FD154XX /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		XXC001000000000000000021 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,10 +222,42 @@
 				XXAD25BC19689D5035DE9BXX /* ContentView.swift in Sources */,
 				XXB001000000000000000001 /* StudyModels.swift in Sources */,
 				XXB001000000000000000003 /* StudyStore.swift in Sources */,
+				XXB001000000000000000005 /* SharedConfig.swift in Sources */,
+				XXB001000000000000000007 /* StudyReminderScheduler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		XXC001000000000000000019 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				XXC001000000000000000003 /* StudyTimerWidgetBundle.swift in Sources */,
+				XXC001000000000000000005 /* StudyTimerWidget.swift in Sources */,
+				XXC001000000000000000007 /* WidgetSharedLoader.swift in Sources */,
+				XXC001000000000000000009 /* SharedConfig.swift in Sources */,
+				XXC001000000000000000010 /* StudyModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		XXC001000000000000000017 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = XXC001000000000000000012 /* XcodeSandboxWidget */;
+			targetProxy = XXC001000000000000000011 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		XXC001000000000000000020 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		XX1AC0FFA8D49BC4623EC1XX /* Release */ = {
@@ -263,6 +382,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = XcodeSandbox/XcodeSandbox.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 53RNN48JZ5;
 				ENABLE_PREVIEWS = YES;
@@ -297,6 +417,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = XcodeSandbox/XcodeSandbox.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 53RNN48JZ5;
 				ENABLE_PREVIEWS = YES;
@@ -327,6 +448,62 @@
 			};
 			name = Release;
 		};
+		XXC001000000000000000022 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = XcodeSandboxWidget/XcodeSandboxWidget.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 53RNN48JZ5;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = XcodeSandboxWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yangping.xcodesandbox.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+					PRODUCT_BUNDLE_PACKAGE_TYPE = "XPC!";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		XXC001000000000000000023 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = XcodeSandboxWidget/XcodeSandboxWidget.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 53RNN48JZ5;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = XcodeSandboxWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yangping.xcodesandbox.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+					PRODUCT_BUNDLE_PACKAGE_TYPE = "XPC!";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -344,6 +521,15 @@
 			buildConfigurations = (
 				XX46EA9E37365FB46B884EXX /* Debug */,
 				XX1AC0FFA8D49BC4623EC1XX /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		XXC001000000000000000018 /* Build configuration list for PBXNativeTarget "XcodeSandboxWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				XXC001000000000000000022 /* Debug */,
+				XXC001000000000000000023 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -31,6 +31,9 @@ struct ContentView: View {
                 }
             }
         }
+        .task {
+            await StudyReminderScheduler.syncReminder(for: store)
+        }
     }
 }
 
@@ -39,9 +42,11 @@ private struct TodayView: View {
 
     @State private var addProjectDraft = ProjectDraft.empty
     @State private var presentedSheet: ProjectSheet?
+    @State private var isShowingNotificationAlert = false
 
     var body: some View {
         List {
+            reminderSection
             goalSection
             todaySummarySection
             activeSessionSection
@@ -77,6 +82,40 @@ private struct TodayView: View {
                 }
             case .goal:
                 GoalEditorView(store: store)
+            }
+        }
+        .alert("通知未开启", isPresented: $isShowingNotificationAlert) {
+            Button("知道了", role: .cancel) {}
+        } message: {
+            Text("请先允许通知权限，才能启用每日学习提醒。")
+        }
+    }
+
+    private var reminderSection: some View {
+        Section("每日提醒") {
+            Toggle("启用提醒", isOn: Binding(
+                get: { store.reminderEnabled },
+                set: { newValue in
+                    Task {
+                        await handleReminderToggleChange(newValue)
+                    }
+                }
+            ))
+
+            if store.reminderEnabled {
+                DatePicker(
+                    "提醒时间",
+                    selection: Binding(
+                        get: { store.reminderDate },
+                        set: { newValue in
+                            store.updateReminder(enabled: true, time: newValue)
+                            Task {
+                                await StudyReminderScheduler.syncReminder(for: store)
+                            }
+                        }
+                    ),
+                    displayedComponents: .hourAndMinute
+                )
             }
         }
     }
@@ -212,6 +251,21 @@ private struct TodayView: View {
                 .font(.title3.weight(.semibold))
                 .monospacedDigit()
         }
+    }
+
+    private func handleReminderToggleChange(_ isEnabled: Bool) async {
+        if isEnabled {
+            let granted = await StudyReminderScheduler.requestAuthorization()
+            guard granted else {
+                isShowingNotificationAlert = true
+                store.updateReminder(enabled: false, time: store.reminderDate)
+                await StudyReminderScheduler.syncReminder(for: store)
+                return
+            }
+        }
+
+        store.updateReminder(enabled: isEnabled, time: store.reminderDate)
+        await StudyReminderScheduler.syncReminder(for: store)
     }
 }
 

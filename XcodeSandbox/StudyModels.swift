@@ -54,17 +54,26 @@ struct StudySnapshot: Codable {
     var sessions: [StudySession]
     var activeSession: ActiveSession?
     var dailyGoalMinutes: Int
+    var reminderEnabled: Bool
+    var reminderHour: Int
+    var reminderMinute: Int
 
     init(
         projects: [StudyProject],
         sessions: [StudySession],
         activeSession: ActiveSession?,
-        dailyGoalMinutes: Int
+        dailyGoalMinutes: Int,
+        reminderEnabled: Bool,
+        reminderHour: Int,
+        reminderMinute: Int
     ) {
         self.projects = projects
         self.sessions = sessions
         self.activeSession = activeSession
         self.dailyGoalMinutes = dailyGoalMinutes
+        self.reminderEnabled = reminderEnabled
+        self.reminderHour = reminderHour
+        self.reminderMinute = reminderMinute
     }
 
     init(from decoder: any Decoder) throws {
@@ -73,6 +82,9 @@ struct StudySnapshot: Codable {
         sessions = try container.decode([StudySession].self, forKey: .sessions)
         activeSession = try container.decodeIfPresent(ActiveSession.self, forKey: .activeSession)
         dailyGoalMinutes = try container.decodeIfPresent(Int.self, forKey: .dailyGoalMinutes) ?? 120
+        reminderEnabled = try container.decodeIfPresent(Bool.self, forKey: .reminderEnabled) ?? false
+        reminderHour = try container.decodeIfPresent(Int.self, forKey: .reminderHour) ?? 20
+        reminderMinute = try container.decodeIfPresent(Int.self, forKey: .reminderMinute) ?? 0
     }
 }
 

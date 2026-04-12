@@ -7,6 +7,9 @@
 
 import Foundation
 import Observation
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 @Observable
 final class StudyStore {
@@ -14,6 +17,9 @@ final class StudyStore {
     private(set) var sessions: [StudySession]
     private(set) var activeSession: ActiveSession?
     private(set) var dailyGoalMinutes: Int
+    private(set) var reminderEnabled: Bool
+    private(set) var reminderHour: Int
+    private(set) var reminderMinute: Int
 
     private let calendar: Calendar
     private let saveURL: URL
@@ -25,6 +31,9 @@ final class StudyStore {
         sessions: [StudySession] = [],
         activeSession: ActiveSession? = nil,
         dailyGoalMinutes: Int = 120,
+        reminderEnabled: Bool = false,
+        reminderHour: Int = 20,
+        reminderMinute: Int = 0,
         calendar: Calendar = .current,
         saveURL: URL? = nil
     ) {
@@ -32,6 +41,9 @@ final class StudyStore {
         self.sessions = sessions
         self.activeSession = activeSession
         self.dailyGoalMinutes = dailyGoalMinutes
+        self.reminderEnabled = reminderEnabled
+        self.reminderHour = reminderHour
+        self.reminderMinute = reminderMinute
         self.calendar = calendar
         self.saveURL = saveURL ?? Self.defaultSaveURL()
 
@@ -85,6 +97,14 @@ final class StudyStore {
 
     func setDailyGoalMinutes(_ minutes: Int) {
         dailyGoalMinutes = max(15, min(minutes, 600))
+        persist()
+    }
+
+    func updateReminder(enabled: Bool, time: Date) {
+        let components = calendar.dateComponents([.hour, .minute], from: time)
+        reminderEnabled = enabled
+        reminderHour = components.hour ?? 20
+        reminderMinute = components.minute ?? 0
         persist()
     }
 
@@ -187,6 +207,17 @@ final class StudyStore {
             .sorted { $0.date > $1.date }
     }
 
+    var reminderDate: Date {
+        let baseComponents = calendar.dateComponents([.year, .month, .day], from: .now)
+        var reminderComponents = DateComponents()
+        reminderComponents.year = baseComponents.year
+        reminderComponents.month = baseComponents.month
+        reminderComponents.day = baseComponents.day
+        reminderComponents.hour = reminderHour
+        reminderComponents.minute = reminderMinute
+        return calendar.date(from: reminderComponents) ?? .now
+    }
+
     private func activeDurationIfMatching(projectID: UUID?, now: Date, intervalStart: Date) -> TimeInterval {
         guard let activeSession else { return 0 }
         guard activeSession.startedAt >= intervalStart else { return 0 }
@@ -202,6 +233,9 @@ final class StudyStore {
         sessions = snapshot.sessions.sorted { $0.startedAt > $1.startedAt }
         activeSession = snapshot.activeSession
         dailyGoalMinutes = snapshot.dailyGoalMinutes
+        reminderEnabled = snapshot.reminderEnabled
+        reminderHour = snapshot.reminderHour
+        reminderMinute = snapshot.reminderMinute
     }
 
     private func persist() {
@@ -209,7 +243,10 @@ final class StudyStore {
             projects: projects,
             sessions: sessions,
             activeSession: activeSession,
-            dailyGoalMinutes: dailyGoalMinutes
+            dailyGoalMinutes: dailyGoalMinutes,
+            reminderEnabled: reminderEnabled,
+            reminderHour: reminderHour,
+            reminderMinute: reminderMinute
         )
 
         do {
@@ -217,16 +254,15 @@ final class StudyStore {
             try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
             let data = try encoder.encode(snapshot)
             try data.write(to: saveURL, options: [.atomic])
+#if canImport(WidgetKit)
+            WidgetCenter.shared.reloadAllTimelines()
+#endif
         } catch {
             assertionFailure("Failed to persist study data: \(error)")
         }
     }
 
     private static func defaultSaveURL() -> URL {
-        let baseURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? FileManager.default.temporaryDirectory
-        return baseURL
-            .appendingPathComponent("StudyTimer", isDirectory: true)
-            .appendingPathComponent("study-data.json")
+        SharedConfig.sharedSnapshotURL()
     }
 }
