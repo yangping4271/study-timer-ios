@@ -1,0 +1,17 @@
+.DS_Store
+.agents/
+skills-lock.json
+
+# Xcode user and build artifacts
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+
+# SwiftPM
+.build/
+
+# Local runtime files
+*.log
+*.pid
+*.tmp
