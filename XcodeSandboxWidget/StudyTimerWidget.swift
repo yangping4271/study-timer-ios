@@ -22,7 +22,14 @@ struct StudyTimerProvider: TimelineProvider {
     func placeholder(in context: Context) -> StudyTimerEntry {
         StudyTimerEntry(
             date: .now,
-            summary: WidgetSnapshotSummary(todayDuration: 60 * 45, goalMinutes: 120, activeProjectName: "iOS")
+            summary: WidgetSnapshotSummary(
+                todayDuration: 60 * 45,
+                goalMinutes: 120,
+                activeProjectName: "iOS",
+                activeSessionStartedAt: .now.addingTimeInterval(-(60 * 45)),
+                hasStudiedToday: true,
+                completedDurationToday: 60 * 30
+            )
         )
     }
 
@@ -32,7 +39,8 @@ struct StudyTimerProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<StudyTimerEntry>) -> Void) {
         let now = Date()
-        let entry = StudyTimerEntry(date: now, summary: WidgetSharedLoader.loadSummary(now: now))
+        let summary = WidgetSharedLoader.loadSummary(now: now)
+        let entry = StudyTimerEntry(date: now, summary: summary)
         let refreshDate = Calendar.current.date(byAdding: .minute, value: 15, to: now) ?? now.addingTimeInterval(900)
         completion(Timeline(entries: [entry], policy: .after(refreshDate)))
     }
@@ -53,17 +61,33 @@ struct StudyTimerWidgetEntryView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Text(entry.date.formattedDuration(entry.summary.todayDuration))
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .monospacedDigit()
+            if let activeSessionStartedAt = entry.summary.activeSessionStartedAt {
+                Text(entry.cumulativeStartDate(from: activeSessionStartedAt), style: .timer)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+            } else {
+                Text(entry.date.formattedDuration(entry.summary.todayDuration))
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+            }
 
             ProgressView(value: entry.progress)
                 .tint(entry.progress >= 1 ? .green : .orange)
 
             if let activeProjectName = entry.summary.activeProjectName {
-                Label(activeProjectName, systemImage: "book.fill")
+                if entry.summary.activeSessionStartedAt != nil {
+                    Label(activeProjectName, systemImage: "book.fill")
+                        .font(.footnote.weight(.medium))
+                        .lineLimit(1)
+                } else {
+                    Text("已完成 \(activeProjectName)")
+                        .font(.footnote.weight(.medium))
+                        .lineLimit(1)
+                }
+            } else if entry.summary.hasStudiedToday {
+                Text("今日已完成学习")
                     .font(.footnote.weight(.medium))
-                    .lineLimit(1)
+                    .foregroundStyle(.secondary)
             } else {
                 Text("未开始学习")
                     .font(.footnote.weight(.medium))
@@ -71,6 +95,12 @@ struct StudyTimerWidgetEntryView: View {
             }
         }
         .containerBackground(.fill.tertiary, for: .widget)
+    }
+}
+
+private extension StudyTimerEntry {
+    func cumulativeStartDate(from activeSessionStartedAt: Date) -> Date {
+        activeSessionStartedAt.addingTimeInterval(-summary.completedDurationToday)
     }
 }
 
@@ -92,11 +122,12 @@ private extension Date {
         let roundedDuration = max(0, Int(duration.rounded()))
         let hours = roundedDuration / 3600
         let minutes = (roundedDuration % 3600) / 60
+        let seconds = roundedDuration % 60
 
         if hours > 0 {
-            return "\(hours)h \(minutes)m"
+            return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
         }
-        return "\(minutes)m"
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 }
 
@@ -105,6 +136,13 @@ private extension Date {
 } timeline: {
     StudyTimerEntry(
         date: .now,
-        summary: WidgetSnapshotSummary(todayDuration: 60 * 72, goalMinutes: 120, activeProjectName: "iOS")
+        summary: WidgetSnapshotSummary(
+            todayDuration: 60 * 72,
+            goalMinutes: 120,
+            activeProjectName: "iOS",
+            activeSessionStartedAt: .now.addingTimeInterval(-(60 * 72)),
+            hasStudiedToday: true,
+            completedDurationToday: 60 * 30
+        )
     )
 }

@@ -11,6 +11,9 @@ struct WidgetSnapshotSummary {
     let todayDuration: TimeInterval
     let goalMinutes: Int
     let activeProjectName: String?
+    let activeSessionStartedAt: Date?
+    let hasStudiedToday: Bool
+    let completedDurationToday: TimeInterval
 }
 
 enum WidgetSharedLoader {
@@ -18,17 +21,31 @@ enum WidgetSharedLoader {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        let fallback = WidgetSnapshotSummary(todayDuration: 0, goalMinutes: 120, activeProjectName: nil)
+        let fallback = WidgetSnapshotSummary(
+            todayDuration: 0,
+            goalMinutes: 120,
+            activeProjectName: nil,
+            activeSessionStartedAt: nil,
+            hasStudiedToday: false,
+            completedDurationToday: 0
+        )
         guard let data = try? Data(contentsOf: SharedConfig.sharedSnapshotURL()) else { return fallback }
         guard let snapshot = try? decoder.decode(StudySnapshot.self, from: data) else { return fallback }
 
         let startOfDay = calendar.startOfDay(for: now)
-        let finishedDuration = snapshot.sessions
+        let todaysSessions = snapshot.sessions
             .filter { $0.startedAt >= startOfDay }
-            .reduce(0) { $0 + $1.duration }
+            .sorted { $0.endedAt > $1.endedAt }
 
-        let activeProjectName = snapshot.activeSession.flatMap { activeSession in
-            snapshot.projects.first { $0.id == activeSession.projectID }?.name
+        let finishedDuration = todaysSessions.reduce(0) { $0 + $1.duration }
+
+        let activeProjectName: String?
+        if let activeSession = snapshot.activeSession {
+            activeProjectName = snapshot.projects.first { $0.id == activeSession.projectID }?.name
+        } else if let latestSession = todaysSessions.first {
+            activeProjectName = snapshot.projects.first { $0.id == latestSession.projectID }?.name
+        } else {
+            activeProjectName = nil
         }
 
         let activeDuration: TimeInterval
@@ -41,7 +58,10 @@ enum WidgetSharedLoader {
         return WidgetSnapshotSummary(
             todayDuration: finishedDuration + activeDuration,
             goalMinutes: snapshot.dailyGoalMinutes,
-            activeProjectName: activeProjectName
+            activeProjectName: activeProjectName,
+            activeSessionStartedAt: snapshot.activeSession?.startedAt,
+            hasStudiedToday: !todaysSessions.isEmpty || activeDuration > 0,
+            completedDurationToday: finishedDuration
         )
     }
 }
